@@ -31,17 +31,28 @@ class Router
 
            //Сравниваем $uriPattern и $uri
            if (preg_match("~$uriPattern~", $uri)) {
-               //Определить какой контроллер и action обрабатывают запрос
-               $segments = explode('/', $path);
+
+               //Получаем внутренний путь из внешнего согласно правилу
+               $internalRoute = preg_replace("~$uriPattern~", $path, $uri);
+               echo '<br><br> Нужно сформировать: '.$internalRoute;
                
-               $controllerName = array_shift($segments).'Controller';
-               $controllerName = ucfirst($controllerName); //делает 1ю букву строки заглавной
-//               echo $controllerName;
                
-               $actionName = 'action'.ucfirst(array_shift($segments));
-//               echo '<br> Класс: '.$controllerName;
-//               echo '<br> Метод: '.$actionName;
+               //Определить контроллер, action, параметры
+              $segments = explode('/', $internalRoute);
                
+              $controllerName = array_shift($segments).'Controller';
+              $controllerName = ucfirst($controllerName); //делает 1ю букву строки заглавной
+
+               
+              $actionName = 'action'.ucfirst(array_shift($segments));
+
+
+              $parameters = $segments;
+
+             
+               die;              
+              
+              
                //Подключить файл класса-контроллера
                $controllerFile = ROOT. '/controllers/'. $controllerName . '.php';
                
@@ -51,7 +62,10 @@ class Router
                
                //Создать объект, вызвать метод (т.е. action)
                $controllerObject = new $controllerName;
-               $result = $controllerObject->$actionName();
+               
+//               $result = $controllerObject->$actionName($parameters);
+               $result = call_user_func_array(array($controllerObject, $actionName), $parameters);
+               
                if ($result != null) {
                    break;
                }
